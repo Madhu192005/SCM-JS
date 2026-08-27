@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Supply Chain</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">📦 SupplyChain</div>
+    <div class="sidebar-user">
+      Logged in as<span id="userName">Admin</span>
+    </div>
+    <nav>
+      <div class="nav-item active" onclick="showSection('dashboard')">📊 Dashboard</div>
+      <div class="nav-item" onclick="showSection('products')">📦 Products</div>
+      <div class="nav-item" onclick="showSection('suppliers')">🏢 Suppliers</div>
+      <div class="nav-item" onclick="showSection('users')">👥 Users</div>
+      <div class="nav-item" onclick="showSection('stocklog')">📋 Stock Log</div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="section active">
+      <div class="page-header">
+        <h2>Dashboard</h2>
+        <p>Overview of your supply chain</p>
+      </div>
+      <div class="stats-grid" id="statsGrid"></div>
+      <div class="card">
+        <div class="card-header"><h3>⚠️ Low Stock Alerts</h3></div>
+        <div class="card-body">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th><th>SKU</th>
+                  <th>Quantity</th><th>Min Threshold</th>
+                </tr>
+              </thead>
+              <tbody id="lowStockTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products -->
+    <div id="products" class="section">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:center">
+        <div><h2>Products</h2><p>Manage your inventory</p></div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('addProductModal')">+ Add Product</button>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th><th>SKU</th><th>Category</th>
+                  <th>Quantity</th><th>Price</th><th>Status</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="productsTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Suppliers -->
+    <div id="suppliers" class="section">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:center">
+        <div><h2>Suppliers</h2><p>Manage suppliers</p></div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('addSupplierModal')">+ Add Supplier</button>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Name</th><th>Email</th><th>Phone</th><th>Products</th></tr>
+              </thead>
+              <tbody id="suppliersTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Users -->
+    <div id="users" class="section">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:center">
+        <div><h2>Users</h2><p>Manage team members</p></div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('addUserModal')">+ Add User</button>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th></tr>
+              </thead>
+              <tbody id="usersTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stock Log -->
+    <div id="stocklog" class="section">
+      <div class="page-header"><h2>Stock Log</h2><p>All stock changes</p></div>
+      <div class="card">
+        <div class="card-body">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Product</th><th>Change</th><th>Reason</th><th>By</th><th>Date</th></tr>
+              </thead>
+              <tbody id="stockLogTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Add Product Modal -->
+<div class="modal-overlay" id="addProductModal">
+  <div class="modal">
+    <h3>Add Product</h3>
+    <div class="form-group"><label>Name</label><input id="pName" placeholder="Product name"></div>
+    <div class="form-group"><label>SKU</label><input id="pSku" placeholder="PROD-001"></div>
+    <div class="form-group"><label>Category</label><input id="pCategory" placeholder="Hardware"></div>
+    <div class="form-group"><label>Quantity</label><input id="pQty" type="number" placeholder="0"></div>
+    <div class="form-group"><label>Min Threshold</label><input id="pThreshold" type="number" placeholder="10"></div>
+    <div class="form-group"><label>Unit Price (₹)</label><input id="pPrice" type="number" placeholder="0.00"></div>
+    <div class="form-group">
+      <label>Supplier</label>
+      <select id="pSupplier">
+        <option value="">No Supplier</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-sm" onclick="closeModal('addProductModal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="addProduct()">Add Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Supplier Modal -->
+<div class="modal-overlay" id="addSupplierModal">
+  <div class="modal">
+    <h3>Add Supplier</h3>
+    <div class="form-group"><label>Name</label><input id="sName" placeholder="Supplier name"></div>
+    <div class="form-group"><label>Email</label><input id="sEmail" placeholder="contact@supplier.com"></div>
+    <div class="form-group"><label>Phone</label><input id="sPhone" placeholder="9876543210"></div>
+    <div class="form-group"><label>Address</label><input id="sAddress" placeholder="City, State"></div>
+    <div class="modal-footer">
+      <button class="btn btn-sm" onclick="closeModal('addSupplierModal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="addSupplier()">Add Supplier</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal-overlay" id="addUserModal">
+  <div class="modal">
+    <h3>Add User</h3>
+    <div class="form-group"><label>Name</label><input id="uName" placeholder="Full name"></div>
+    <div class="form-group"><label>Email</label><input id="uEmail" placeholder="user@supply.com"></div>
+    <div class="form-group"><label>Password</label><input id="uPassword" type="password" placeholder="••••••••"></div>
+    <div class="form-group">
+      <label>Role</label>
+      <select id="uRole">
+        <option value="manager">Manager</option>
+        <option value="staff">Staff</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-sm" onclick="closeModal('addUserModal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="addUser()">Add User</button>
+    </div>
+  </div>
+</div>
+
+<!-- Stock Adjust Modal -->
+<div class="modal-overlay" id="stockModal">
+  <div class="modal">
+    <h3>Adjust Stock</h3>
+    <input type="hidden" id="stockProductId">
+    <div class="form-group">
+      <label>Change Amount (use negative to reduce)</label>
+      <input id="stockChange" type="number" placeholder="e.g. 100 or -50">
+    </div>
+    <div class="form-group">
+      <label>Reason</label>
+      <input id="stockReason" placeholder="Stock received / damaged etc.">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-sm" onclick="closeModal('stockModal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="adjustStock()">Update Stock</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="js/api.js"></script>
+<script>
+  // Auth guard
+  if (!localStorage.getItem('token') || localStorage.getItem('role') !== 'admin') {
+    window.location.href = 'index.html';
+  }
+
+  document.getElementById('userName').textContent = localStorage.getItem('name') || 'Admin';
+
+  // ── Navigation ──
+  function showSection(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(name).classList.add('active');
+    event.currentTarget.classList.add('active');
+    if (name === 'dashboard') loadDashboard();
+    if (name === 'products')  loadProducts();
+    if (name === 'suppliers') loadSuppliers();
+    if (name === 'users')     loadUsers();
+    if (name === 'stocklog')  loadStockLog();
+  }
+
+  async function loadSupplierOptions() {
+    const { suppliers } = await api.getSuppliers();
+    const select = document.getElementById('pSupplier');
+    select.innerHTML = '<option value="">No Supplier</option>' +
+      suppliers.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+  }
+
+  function openModal(id) {
+    document.getElementById(id).classList.add('open');
+    if (id === 'addProductModal') loadSupplierOptions();
+  }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  function logout() {
+    localStorage.clear();
+    window.location.href = 'index.html';
+  }
+
+  // ── Dashboard ──
+  async function loadDashboard() {
+    const [analytics, lowStock] = await Promise.all([
+      api.getAnalytics(),
+      api.getLowStock()
+    ]);
+
+    const s = analytics.summary;
+    document.getElementById('statsGrid').innerHTML = `
+      <div class="stat-card">
+        <div class="stat-label">Total Products</div>
+        <div class="stat-value primary">${s.total_products}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Inventory Value</div>
+        <div class="stat-value success">₹${Number(s.total_value).toLocaleString()}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Low Stock Items</div>
+        <div class="stat-value warning">${s.low_stock_count}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Suppliers</div>
+        <div class="stat-value primary">${s.total_suppliers}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active Users</div>
+        <div class="stat-value success">${s.total_users}</div>
+      </div>
+    `;
+
+    document.getElementById('lowStockTable').innerHTML =
+      lowStock.products.length === 0
+        ? '<tr><td colspan="4" style="text-align:center;color:#64748b">No low stock items 🎉</td></tr>'
+        : lowStock.products.map(p => `
+            <tr>
+              <td>${p.name}</td>
+              <td>${p.sku}</td>
+              <td><span class="badge badge-danger">${p.quantity}</span></td>
+              <td>${p.min_threshold}</td>
+            </tr>`).join('');
+  }
+
+  // ── Products ──
+  async function loadProducts() {
+    const [{ products }, { suppliers }] = await Promise.all([
+      api.getProducts(),
+      api.getSuppliers()
+    ]);
+
+    const select = document.getElementById('pSupplier');
+    select.innerHTML = '<option value="">No Supplier</option>' +
+      suppliers.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+
+    document.getElementById('productsTable').innerHTML = products.map(p => `
+      <tr>
+        <td>${p.name}</td>
+        <td>${p.sku}</td>
+        <td>${p.category || '—'}</td>
+        <td>${p.quantity}</td>
+        <td>₹${Number(p.unit_price).toLocaleString()}</td>
+        <td>
+          ${p.quantity <= p.min_threshold
+            ? '<span class="badge badge-warning">Low Stock</span>'
+            : '<span class="badge badge-success">OK</span>'}
+        </td>
+        <td>
+          <button class="btn btn-warning btn-sm"
+            onclick="openStockModal(${p.id})">Stock</button>
+        </td>
+      </tr>`).join('');
+  }
+
+  async function addProduct() {
+    const supplierVal = document.getElementById('pSupplier').value;
+    const res = await api.addProduct({
+      name:          document.getElementById('pName').value,
+      sku:           document.getElementById('pSku').value,
+      category:      document.getElementById('pCategory').value,
+      quantity:      parseInt(document.getElementById('pQty').value) || 0,
+      min_threshold: parseInt(document.getElementById('pThreshold').value) || 10,
+      unit_price:    parseFloat(document.getElementById('pPrice').value),
+      supplier_id:   supplierVal ? parseInt(supplierVal) : null
+    });
+    if (res.product) {
+      closeModal('addProductModal');
+      showToast('Product added successfully');
+      loadProducts();
+    } else {
+      showToast(res.message || 'Failed to add product', 'error');
+    }
+  }
+
+  function openStockModal(id) {
+    document.getElementById('stockProductId').value = id;
+    document.getElementById('stockChange').value = '';
+    document.getElementById('stockReason').value = '';
+    openModal('stockModal');
+  }
+
+  async function adjustStock() {
+    const id     = document.getElementById('stockProductId').value;
+    const change = parseInt(document.getElementById('stockChange').value);
+    const reason = document.getElementById('stockReason').value;
+
+    const res = await api.updateStock(id, {
+      change_amount: change,
+      reason
+    });
+
+    if (res.product) {
+      closeModal('stockModal');
+      showToast(res.warning || 'Stock updated');
+      loadProducts();
+    } else {
+      showToast(res.message || 'Failed', 'error');
+    }
+  }
+
+  // ── Suppliers ──
+  async function loadSuppliers() {
+    const { suppliers } = await api.getSuppliers();
+    document.getElementById('suppliersTable').innerHTML = suppliers.map(s => `
+      <tr>
+        <td>${s.name}</td>
+        <td>${s.email || '—'}</td>
+        <td>${s.phone || '—'}</td>
+        <td><span class="badge badge-blue">${s.product_count}</span></td>
+      </tr>`).join('');
+  }
+
+  async function addSupplier() {
+    const res = await api.addSupplier({
+      name:    document.getElementById('sName').value,
+      email:   document.getElementById('sEmail').value,
+      phone:   document.getElementById('sPhone').value,
+      address: document.getElementById('sAddress').value
+    });
+    if (res.supplier) {
+      closeModal('addSupplierModal');
+      showToast('Supplier added');
+      loadSuppliers();
+    } else {
+      showToast(res.message || 'Failed', 'error');
+    }
+  }
+
+  // ── Users ──
+  async function loadUsers() {
+    const { users } = await api.getUsers();
+    document.getElementById('usersTable').innerHTML = users.map(u => `
+      <tr>
+        <td>${u.name}</td>
+        <td>${u.email}</td>
+        <td><span class="badge badge-blue">${u.role}</span></td>
+        <td>
+          ${u.is_active
+            ? '<span class="badge badge-success">Active</span>'
+            : '<span class="badge badge-danger">Inactive</span>'}
+        </td>
+      </tr>`).join('');
+  }
+
+  async function addUser() {
+    const res = await api.registerUser({
+      name:     document.getElementById('uName').value,
+      email:    document.getElementById('uEmail').value,
+      password: document.getElementById('uPassword').value,
+      role:     document.getElementById('uRole').value
+    });
+    if (res.user) {
+      closeModal('addUserModal');
+      document.getElementById('uName').value = '';
+      document.getElementById('uEmail').value = '';
+      document.getElementById('uPassword').value = '';
+      document.getElementById('uRole').value = 'manager';
+      showToast(`Team member ${res.user.name} (${res.user.email}) registered successfully`);
+      loadUsers();
+    } else {
+      showToast(res.message || 'Registration failed. Only admins can add users.', 'error');
+    }
+  }
+
+  // ── Stock Log ──
+  async function loadStockLog() {
+    const { logs } = await api.getStockLog();
+    document.getElementById('stockLogTable').innerHTML = logs.map(l => `
+      <tr>
+        <td>${l.product_name}</td>
+        <td>
+          <span class="badge ${l.change_amount > 0 ? 'badge-success' : 'badge-danger'}">
+            ${l.change_amount > 0 ? '+' : ''}${l.change_amount}
+          </span>
+        </td>
+        <td>${l.reason}</td>
+        <td>${l.changed_by_name || '—'}</td>
+        <td>${new Date(l.created_at).toLocaleDateString()}</td>
+      </tr>`).join('');
+  }
+
+  // Load dashboard on start
+  loadDashboard();
+</script>
+</body>
+</html>
