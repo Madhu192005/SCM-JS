@@ -3,6 +3,7 @@ services:
   - type: web
     name: supply-chain-api
     runtime: node
+    plan: free
     region: oregon
     rootDir: backend
     buildCommand: npm ci
