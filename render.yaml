@@ -5,8 +5,8 @@ services:
     runtime: node
     region: oregon
     rootDir: backend
-    buildCommand: npm install && npm run build
-    startCommand: node dist/index.js
+    buildCommand: npm ci
+    startCommand: npm start
     envVars:
       - key: PORT
         value: 3001
